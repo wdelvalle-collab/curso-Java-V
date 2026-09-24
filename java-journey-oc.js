@@ -1390,10 +1390,13 @@ async function submitTeacherLogin() {
   const apellido = document.getElementById('teacher-apellido-input').value.trim();
   const pw = document.getElementById('teacher-pw-input').value;
   try {
+    const errBox = document.getElementById('teacher-pw-error');
     const res = await apiPost('/api/auth/teacher', { nombre, apellido, password: pw });
-    const data = await res.json();
+    let data = {};
+    try { data = await res.json(); } catch {}
     if (!res.ok) {
-      document.getElementById('teacher-pw-error').style.display = 'block';
+      errBox.textContent = data.error || ('Error del servidor (' + res.status + ')');
+      errBox.style.display = 'block';
       return;
     }
     teacherToken = data.token;
@@ -1401,7 +1404,9 @@ async function submitTeacherLogin() {
     openTeacherPanel();
   }
  catch {
-    document.getElementById('teacher-pw-error').style.display = 'block';
+    const errBox = document.getElementById('teacher-pw-error');
+    errBox.textContent = 'No se pudo conectar con el servidor (/api/auth/teacher).';
+    errBox.style.display = 'block';
   }
 }
 let _allStudents = [];
@@ -2489,8 +2494,8 @@ async function saveTeacherAccount() {
   const apellido = document.getElementById('tp-teacher-apellido').value.trim();
   const pw = document.getElementById('tp-teacher-pw').value;
   const msg = document.getElementById('tp-teacher-msg');
-  if (!nombre || !apellido || !pw) {
-    msg.style.display = 'block'; msg.style.color = 'var(--danger)'; msg.textContent = 'Completar todos los campos.'; return;
+  if (!nombre || !pw) {
+    msg.style.display = 'block'; msg.style.color = 'var(--danger)'; msg.textContent = 'Completar nombre y contraseña.'; return;
   }
   try {
     const res = await fetch('/api/auth/teacher', {
